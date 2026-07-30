@@ -7,8 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Archivo:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<!-- PayPal SDK — 這裡用 sandbox 測試用 client-id="test"，正式上線請換成您自己商家的 Client ID -->
-<script src="https://www.paypal.com/sdk/js?client-id=test&currency=TWD&intent=capture" onerror="window.__paypalFailed = true"></script>
 <!-- Supabase：真正的資料庫與後台登入驗證 -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -185,60 +183,60 @@
   .checkout-btn{ width:100%; padding:15px; background:var(--ink); color:var(--paper); border:none; font-size:12px; letter-spacing:.14em; text-transform:uppercase; font-family:'Space Mono', monospace; }
   .cart-empty{ text-align:center; padding:60px 10px; color:var(--grey-3); font-size:13px; }
 
-  /* ---------- modal (checkout) ---------- */
-  .modal{
-    position:fixed; inset:0; z-index:110; display:flex; align-items:center; justify-content:center;
-    background:rgba(0,0,0,.4); opacity:0; pointer-events:none; transition:opacity .25s ease;
+  /* ---------- 結帳頁（極簡單頁，參考 Stripe / Link 風格） ---------- */
+  .checkout-page{
+    min-height:100vh;
+    display:flex; align-items:center; justify-content:center;
+    padding:40px 20px;
+    background:#F8F9FA;
   }
-  .modal.show{ opacity:1; pointer-events:auto; }
-  .modal-box{
-    background:var(--paper); width:min(460px,92vw); max-height:88vh; overflow-y:auto;
-    padding:32px; transform:translateY(16px) scale(.98); transition:transform .28s ease;
+  .checkout-card{
+    width:100%; max-width:440px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:16px;
+    box-shadow:0 2px 6px rgba(0,0,0,.03), 0 12px 32px rgba(0,0,0,.06);
+    padding:36px 32px 30px;
   }
-  .modal.show .modal-box{ transform:none; }
-  .modal-close{ float:right; background:none; border:none; font-size:18px; }
-  .pay-methods{ display:flex; gap:8px; margin:20px 0; }
-  .pay-method-btn{ flex:1; border:1px solid var(--ink); background:var(--paper); padding:12px 8px; font-size:12.5px; border-radius:2px; transition:all .15s ease; }
-  .pay-method-btn.selected{ background:var(--ink); color:var(--paper); }
-  .bank-form input{ width:100%; padding:12px; border:1px solid var(--line); font-family:'Space Mono', monospace; margin-top:6px; margin-bottom:14px; }
-  .bank-submit{ width:100%; padding:14px; background:var(--ink); color:var(--paper); border:none; font-size:12px; letter-spacing:.12em; text-transform:uppercase; }
+  .checkout-back{
+    display:inline-block; font-family:'Space Mono', monospace; font-size:11px;
+    letter-spacing:.08em; text-transform:uppercase; color:var(--grey-3); margin-bottom:22px;
+  }
+  .checkout-back:hover{ color:var(--ink); }
+  .checkout-total-block{ text-align:center; padding-bottom:22px; margin-bottom:22px; border-bottom:1px solid var(--line); }
+  .checkout-total-label{
+    font-family:'Space Mono', monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--grey-3);
+  }
+  .checkout-total-amount{
+    font-family:'Fraunces', serif; font-weight:400; font-size:44px; margin-top:8px; color:var(--ink);
+  }
+  .checkout-summary-list{ margin-bottom:26px; }
+  .checkout-summary-row{
+    display:flex; justify-content:space-between; gap:10px;
+    font-size:13.5px; color:#444; padding:9px 0; border-bottom:1px solid #F1F1EF;
+  }
+  .checkout-summary-row:last-child{ border-bottom:none; }
+  .checkout-summary-row .qty{ color:var(--grey-3); font-size:12px; }
+  .checkout-continue-btn{
+    width:100%; padding:16px; background:#111111; color:#fff; border:none; border-radius:8px;
+    font-family:'Archivo', sans-serif; font-weight:600; font-size:15px; letter-spacing:.01em;
+    transition:background .2s ease, opacity .2s ease, transform .15s ease;
+  }
+  .checkout-continue-btn:hover{ background:#2b2b2b; }
+  .checkout-continue-btn:active{ transform:scale(.99); }
+  .checkout-continue-btn:disabled{ opacity:.55; cursor:not-allowed; }
+  .checkout-fine-print{
+    font-size:11.5px; color:var(--grey-3); line-height:1.55; text-align:center; margin-top:16px;
+  }
+  .checkout-secure-note{
+    display:flex; align-items:center; gap:6px; justify-content:center;
+    font-size:11px; color:var(--grey-3); margin-top:18px;
+  }
+  @media (max-width:520px){
+    .checkout-page{ padding:0; align-items:flex-start; background:var(--paper); }
+    .checkout-card{ max-width:none; min-height:100vh; border:none; border-radius:0; box-shadow:none; padding:28px 22px; }
+  }
   .note-box{ background:var(--grey-1); padding:12px 14px; font-size:12.5px; color:#555; margin-top:10px; }
-  .success-box{ text-align:center; padding:20px 0; }
-
-  /* ---- 訂單摘要 ---- */
-  .co-summary{ background:#F8F9FA; border:1px solid var(--line); border-radius:4px; padding:16px 18px; margin:18px 0; }
-  .co-summary-row{ display:flex; justify-content:space-between; gap:10px; font-size:13px; color:#444; padding:4px 0; }
-  .co-summary-row .qty{ color:var(--grey-3); }
-  .co-summary-total{ display:flex; justify-content:space-between; align-items:baseline; font-family:'Space Mono', monospace; font-size:17px; border-top:1px solid var(--line); margin-top:10px; padding-top:12px; }
-  .co-fx-note{ font-size:11.5px; color:var(--grey-3); margin-top:8px; line-height:1.5; }
-
-  /* ---- 信用卡表單 ---- */
-  .co-divider{ display:flex; align-items:center; gap:12px; margin:20px 0; font-size:10.5px; color:var(--grey-3); font-family:'Space Mono', monospace; text-transform:uppercase; letter-spacing:.08em; }
-  .co-divider::before, .co-divider::after{ content:''; flex:1; height:1px; background:var(--line); }
-  #expressCheckoutElement{ min-height:44px; }
-  .stripe-field{ display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
-  .stripe-field label{ font-family:'Space Mono', monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--grey-3); }
-  .stripe-el{
-    background:#F8F9FA; border:1px solid var(--line); border-radius:3px;
-    padding:12px 12px; transition:border-color .15s ease, box-shadow .15s ease;
-  }
-  .stripe-el.StripeElement--focus{ border-color:var(--ink); box-shadow:0 0 0 1px var(--ink); }
-  .stripe-el.StripeElement--invalid{ border-color:var(--danger); }
-  .stripe-row{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-  .co-select{ width:100%; padding:12px; border:1px solid var(--line); background:#F8F9FA; font-family:'Archivo', sans-serif; font-size:14px; border-radius:3px; }
-  .co-check-row{ display:flex; align-items:flex-start; gap:10px; font-size:13px; margin:18px 0 10px; cursor:pointer; color:#333; }
-  .co-check-row input{ margin-top:3px; accent-color: var(--ink); }
-  .co-legal{ font-size:11.5px; color:var(--grey-3); line-height:1.55; margin-bottom:18px; }
-  .co-error{ color:var(--danger); font-size:12.5px; margin-bottom:10px; min-height:16px; }
-  .co-submit-btn{
-    width:100%; padding:16px; background:#111111; color:#fff; border:none; border-radius:3px;
-    font-family:'Space Mono', monospace; font-size:12.5px; letter-spacing:.1em; text-transform:uppercase;
-    transition:background .2s ease, opacity .2s ease;
-  }
-  .co-submit-btn:hover{ background:#2b2b2b; }
-  .co-submit-btn:disabled{ opacity:.55; cursor:not-allowed; }
-  .co-secure-note{ display:flex; align-items:center; gap:6px; justify-content:center; font-size:11px; color:var(--grey-3); margin-top:12px; }
-  .success-box .mark{ font-size:38px; margin-bottom:10px; }
 
   /* ---------- shopee floating (minimal B&W) ---------- */
   .shopee-fab{
@@ -362,6 +360,31 @@
   </div>
 </div>
 
+<!-- ============ CHECKOUT（極簡單頁結帳） ============ -->
+<div class="view" id="view-checkout">
+  <div class="checkout-page">
+    <div class="checkout-card">
+      <a href="#/shop" class="checkout-back" onclick="event.preventDefault(); goTo('#/shop'); return false;">← 返回商店</a>
+
+      <div class="checkout-total-block">
+        <span class="checkout-total-label">Total to pay</span>
+        <div class="checkout-total-amount" id="checkoutTotalAmount">NT$ 0</div>
+      </div>
+
+      <div class="checkout-summary-list" id="checkoutSummaryList"></div>
+
+      <button type="button" class="checkout-continue-btn" id="checkoutContinueBtn">Continue</button>
+      <div class="checkout-fine-print">按下 Continue 即代表您同意本次金額將由綠界科技（ECPay）安全處理付款；若為訂閱方案，將依方案週期自動續訂扣款，取消請至會員中心操作。</div>
+      <div class="checkout-secure-note">🔒 Secured by ECPay</div>
+
+      <form id="ecpayRedirectForm" method="POST" action="/api/create-ecpay-order" style="display:none;">
+        <input type="hidden" name="itemsJson" id="ecpayItemsJson">
+        <input type="hidden" name="total" id="ecpayTotal">
+      </form>
+    </div>
+  </div>
+</div>
+
 <!-- ============ ADMIN ============ -->
 <div class="view" id="view-admin">
   <div class="wrap">
@@ -407,7 +430,7 @@
             <div class="num" id="revOrderCount">0</div>
           </div>
         </div>
-        <div class="note-box">說明：PayPal 付款須實際收到 <code>status === 'COMPLETED'</code> 才會建立訂單並計入營收；買家中途關閉視窗不會產生任何資料。銀行轉帳訂單於買家送出後五碼後狀態為「待對帳」，須由您在「訂單管理」中手動改為「已付款」才會被算進總營收。</div>
+        <div class="note-box">說明：結帳現在只有綠界（ECPay）信用卡一種方式，客人按「Continue」會整頁跳轉到 ECPay 付款頁，付款成功後由後端在背景把訂單標記為「已完成」才會計入總營收；買家中途放棄付款不會產生已完成的訂單。（若資料庫中仍有舊的 PayPal／銀行轉帳訂單紀錄，「待對帳」狀態一樣不會計入總營收，需手動確認後改為「已付款」。）</div>
       </div>
 
       <div class="admin-section" id="tab-products">
@@ -507,94 +530,6 @@
     <button class="checkout-btn" id="checkoutOpenBtn">前往結帳</button>
   </div>
 </aside>
-
-<!-- checkout modal -->
-<div class="modal" id="checkoutModal">
-  <div class="modal-box">
-    <button class="modal-close" id="checkoutCloseBtn">✕</button>
-    <span class="eyebrow">結帳</span>
-    <h2 style="font-style:italic; margin-top:8px;">完成付款</h2>
-
-    <!-- 訂單摘要 -->
-    <div class="co-summary">
-      <span class="eyebrow">訂單摘要</span>
-      <div id="coSummaryList" style="margin-top:8px;"></div>
-      <div class="co-summary-total"><span>總計 <span style="color:var(--grey-3); font-size:11px;">TWD</span></span><span id="coSummaryTotal">NT$ 0</span></div>
-      <div class="co-fx-note" id="coFxNote"></div>
-    </div>
-
-    <div class="pay-methods">
-      <button class="pay-method-btn selected" data-method="card">信用卡</button>
-      <button class="pay-method-btn" data-method="paypal">PayPal</button>
-      <button class="pay-method-btn" data-method="bank">銀行轉帳</button>
-    </div>
-
-    <!-- 信用卡付款（Stripe Elements） -->
-    <div id="payPanelCard">
-      <div id="expressCheckoutWrap" style="display:none;">
-        <div id="expressCheckoutElement"></div>
-        <div class="co-divider"><span>或使用卡片付款</span></div>
-      </div>
-
-      <form id="cardForm">
-        <div class="stripe-field">
-          <label>卡號</label>
-          <div id="cardNumberElement" class="stripe-el"></div>
-        </div>
-        <div class="stripe-row">
-          <div class="stripe-field">
-            <label>有效期限</label>
-            <div id="cardExpiryElement" class="stripe-el"></div>
-          </div>
-          <div class="stripe-field">
-            <label>安全碼 CVC</label>
-            <div id="cardCvcElement" class="stripe-el"></div>
-          </div>
-        </div>
-        <div class="stripe-field">
-          <label>國家/地區</label>
-          <select id="cardCountry" class="co-select">
-            <option value="TW">台灣</option>
-            <option value="HK">香港</option>
-            <option value="MO">澳門</option>
-            <option value="SG">新加坡</option>
-            <option value="MY">馬來西亞</option>
-            <option value="JP">日本</option>
-            <option value="US">美國</option>
-            <option value="OTHER">其他地區</option>
-          </select>
-        </div>
-        <label class="co-check-row">
-          <input type="checkbox" id="saveCardCheck">
-          <span>儲存這張卡片資訊，加速下次結帳</span>
-        </label>
-        <div class="co-legal">勾選即代表您同意本次金額將立即從您的卡片扣款；若為訂閱方案，未來將依方案週期自動續訂扣款，取消請至會員中心操作。</div>
-        <div id="cardError" class="co-error"></div>
-        <button type="submit" class="co-submit-btn" id="cardSubmitBtn">付款 <span id="cardSubmitAmount">NT$ 0</span></button>
-        <div class="co-secure-note">🔒 由 Stripe 加密處理，卡號不會經過本站伺服器</div>
-      </form>
-    </div>
-
-    <!-- PayPal -->
-    <div id="payPanelPaypal" style="display:none;">
-      <div class="note-box">PayPal 付款完成並回傳 <code>COMPLETED</code> 狀態後，才會建立訂單並計入營收。</div>
-      <div id="paypal-button-container" style="margin-top:16px;"></div>
-    </div>
-
-    <!-- 銀行轉帳 -->
-    <div id="payPanelBank" style="display:none;" class="bank-form">
-      <div class="note-box">請先完成轉帳，再填寫您的匯款帳號末五碼。訂單將標記為「待對帳」，賣家確認款項後會手動更新為「已付款」。</div>
-      <label style="font-family:'Space Mono',monospace; font-size:11px; text-transform:uppercase; color:var(--grey-3);">匯款帳號末五碼</label>
-      <input type="text" id="bankLast5" maxlength="5" placeholder="例如：12345">
-      <button class="bank-submit" id="bankSubmitBtn">送出對帳資料</button>
-    </div>
-
-    <div id="paySuccess" style="display:none;" class="success-box">
-      <div class="mark">✓</div>
-      <div id="paySuccessMsg"></div>
-    </div>
-  </div>
-</div>
 
 <!-- shopee floating -->
 <a class="shopee-fab" href="https://tw.shp.ee/xMrdLaNo" target="_blank" rel="noopener">
@@ -710,8 +645,7 @@ let state = {
   selectedSize: null,
   newProductImages: { front:null, back:null, detail:null },
   newProductColors: [],
-  newProductSizes: [],
-  checkoutMethod: null
+  newProductSizes: []
 };
 
 function uid(){ return crypto.randomUUID ? crypto.randomUUID() : (Date.now().toString(36) + Math.random().toString(36).slice(2,10)); }
@@ -785,6 +719,9 @@ function route(){
   } else if (hash.startsWith('#/admin')){
     document.getElementById('view-admin').classList.add('active');
     checkAdminSession();
+  } else if (hash.startsWith('#/checkout')){
+    document.getElementById('view-checkout').classList.add('active');
+    renderCheckoutPage();
   } else {
     document.getElementById('view-shop').classList.add('active');
     renderShopGrid();
@@ -942,281 +879,48 @@ document.getElementById('cartOpenBtn').onclick = ()=>{ renderCartDrawer(); openC
 document.getElementById('cartCloseBtn').onclick = closeCart;
 document.getElementById('cartOverlay').onclick = closeCart;
 
-/* ---------------- checkout modal ---------------- */
-const checkoutModal = document.getElementById('checkoutModal');
+/* ---------------- 結帳頁（極簡單頁，Continue → 綠界全頁跳轉） ---------------- */
 document.getElementById('checkoutOpenBtn').onclick = ()=>{
   if (!DB.getCart().length){ alert('購物車是空的，請先選購商品。'); return; }
-  resetCheckoutModal();
-  renderCheckoutSummary();
-  checkoutModal.classList.add('show');
-  mountStripeElements(currentCartTotal());
+  closeCart();
+  goTo('#/checkout');
 };
-document.getElementById('checkoutCloseBtn').onclick = ()=> checkoutModal.classList.remove('show');
 
-function renderCheckoutSummary(){
+function currentCartTotal(){ return DB.getCart().reduce((s,i)=>s+Number(i.price||0),0); }
+
+function renderCheckoutPage(){
   const cart = DB.getCart();
+  if (!cart.length){
+    // 購物車是空的（例如直接輸入網址進來），導回商店
+    goTo('#/shop');
+    return;
+  }
   const total = currentCartTotal();
-  document.getElementById('coSummaryList').innerHTML = cart.map(item => `
-    <div class="co-summary-row">
+  document.getElementById('checkoutTotalAmount').textContent = money(total);
+  document.getElementById('checkoutSummaryList').innerHTML = cart.map(item => `
+    <div class="checkout-summary-row">
       <span>${item.name}${item.color||item.size ? ` <span class="qty">(${[item.color,item.size].filter(Boolean).join(' / ')})</span>` : ''}</span>
       <span>${money(item.price)}</span>
     </div>
   `).join('');
-  document.getElementById('coSummaryTotal').textContent = money(total);
-  document.getElementById('cardSubmitAmount').textContent = money(total);
-  // 幣別提示：目前商店僅以新台幣計價；若買家使用非台幣發卡的信用卡，
-  // 實際請款金額與匯率換算將由發卡銀行 / Stripe 依即時匯率決定
-  document.getElementById('coFxNote').textContent =
-    '以新台幣（TWD）計價。若您的卡片為海外發卡，實際扣款金額將依發卡銀行當下匯率換算，可能與台幣顯示金額有些微差異。';
 }
 
-function resetCheckoutModal(){
-  state.checkoutMethod = 'card';
-  document.querySelectorAll('.pay-method-btn').forEach(b=>b.classList.toggle('selected', b.dataset.method==='card'));
-  document.getElementById('payPanelCard').style.display = 'block';
-  document.getElementById('payPanelPaypal').style.display = 'none';
-  document.getElementById('payPanelBank').style.display = 'none';
-  document.getElementById('paySuccess').style.display = 'none';
-  document.querySelector('.pay-methods').style.display = 'flex';
-  document.getElementById('bankLast5').value = '';
-  document.getElementById('cardError').textContent = '';
-  document.getElementById('paypal-button-container').innerHTML = '';
-}
-document.querySelectorAll('.pay-method-btn').forEach(btn=>{
-  btn.onclick = ()=>{
-    document.querySelectorAll('.pay-method-btn').forEach(b=>b.classList.remove('selected'));
-    btn.classList.add('selected');
-    state.checkoutMethod = btn.dataset.method;
-    document.getElementById('payPanelCard').style.display = state.checkoutMethod==='card' ? 'block' : 'none';
-    document.getElementById('payPanelPaypal').style.display = state.checkoutMethod==='paypal' ? 'block' : 'none';
-    document.getElementById('payPanelBank').style.display = state.checkoutMethod==='bank' ? 'block' : 'none';
-    if (state.checkoutMethod === 'paypal') renderPaypalButton();
-  };
-});
-
-function currentCartTotal(){ return DB.getCart().reduce((s,i)=>s+Number(i.price||0),0); }
-
-/* ---------------- Stripe：信用卡 Elements ---------------- */
-async function mountStripeElements(totalTWD){
-  const errEl = document.getElementById('cardError');
-  errEl.textContent = '';
-  if (typeof Stripe === 'undefined'){
-    errEl.textContent = 'Stripe SDK 尚未載入成功，請確認網路連線。';
-    return;
-  }
-  if (!STRIPE_PUBLISHABLE_KEY || STRIPE_PUBLISHABLE_KEY.indexOf('YOUR_PUBLISHABLE_KEY') !== -1){
-    errEl.textContent = '尚未設定 Stripe Publishable Key，請先在程式碼中填入您自己的金鑰。';
-    return;
-  }
-  if (!stripeInstance) stripeInstance = Stripe(STRIPE_PUBLISHABLE_KEY);
-
-  // 卸載舊的元件，避免重複掛載
-  try{ cardEls.cardNumber && cardEls.cardNumber.unmount(); }catch(e){}
-  try{ cardEls.cardExpiry && cardEls.cardExpiry.unmount(); }catch(e){}
-  try{ cardEls.cardCvc && cardEls.cardCvc.unmount(); }catch(e){}
-  try{ cardEls.expressCheckout && cardEls.expressCheckout.unmount(); }catch(e){}
-
-  const amountInSmallestUnit = Math.round(totalTWD * 100); // 請依 Stripe 文件確認 TWD 是否為零小數貨幣，若是請改為 Math.round(totalTWD)
-  const elements = stripeInstance.elements({ mode:'payment', amount: amountInSmallestUnit, currency:'twd' });
-  cardEls.elements = elements;
-
-  const elementStyle = {
-    style: {
-      base: { color:'#111111', fontFamily:"'Archivo', sans-serif", fontSize:'15px', '::placeholder':{ color:'#9C9A96' } },
-      invalid: { color:'#B23B3B' }
-    }
-  };
-  cardEls.cardNumber = elements.create('cardNumber', elementStyle);
-  cardEls.cardExpiry = elements.create('cardExpiry', elementStyle);
-  cardEls.cardCvc = elements.create('cardCvc', elementStyle);
-  cardEls.cardNumber.mount('#cardNumberElement');
-  cardEls.cardExpiry.mount('#cardExpiryElement');
-  cardEls.cardCvc.mount('#cardCvcElement');
-
-  // 快捷支付（Apple Pay / Google Pay / Link）：需要網站部署在 HTTPS 網域並在 Stripe
-  // 後台完成網域註冊才會顯示，本機測試 / file:// 開啟時通常不會出現按鈕屬正常現象。
-  try{
-    cardEls.expressCheckout = elements.create('expressCheckout');
-    cardEls.expressCheckout.mount('#expressCheckoutElement');
-    cardEls.expressCheckout.on('ready', (event)=>{
-      document.getElementById('expressCheckoutWrap').style.display =
-        (event.availablePaymentMethods && Object.keys(event.availablePaymentMethods).length) ? 'block' : 'none';
-    });
-    cardEls.expressCheckout.on('confirm', (event)=> handleExpressCheckoutConfirm(event));
-  }catch(err){
-    console.log('Express Checkout（Apple/Google Pay/Link）目前無法使用：', err);
-    document.getElementById('expressCheckoutWrap').style.display = 'none';
-  }
-}
-
-document.getElementById('cardForm').addEventListener('submit', async (e)=>{
-  e.preventDefault();
-  const errEl = document.getElementById('cardError');
-  const submitBtn = document.getElementById('cardSubmitBtn');
-  errEl.textContent = '';
-  const total = currentCartTotal();
-  submitBtn.disabled = true; submitBtn.textContent = '處理中…';
-  try{
-    const clientSecret = await requestPaymentIntent(total);
-    const country = document.getElementById('cardCountry').value;
-    const result = await stripeInstance.confirmCardPayment(clientSecret, {
-      payment_method: {
-        card: cardEls.cardNumber,
-        billing_details: { address: { country } }
-      }
-    });
-    if (result.error){
-      errEl.textContent = result.error.message;
-    } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded'){
-      const order = await createOrderRecord({ method:'card', status:'completed', stripePaymentIntentId: result.paymentIntent.id });
-      notifyOrderEmail(order);
-      showPaySuccess('付款成功，訂單已建立。感謝您的購買！');
-    } else {
-      errEl.textContent = '付款尚未完成（狀態：' + (result.paymentIntent && result.paymentIntent.status) + '）。';
-    }
-  }catch(err){
-    console.error(err);
-    errEl.textContent = err.message;
-  }
-  submitBtn.disabled = false; submitBtn.textContent = '付款 ' + money(total);
-});
-
-// Express Checkout（Apple Pay / Google Pay / Link）確認流程
-// 注意：Stripe 的 Express Checkout Element API 屬於較新的介面，實際欄位/事件名稱
-// 請對照 Stripe 官方文件最新版本核對一次，避免因 API 版本更新而失效。
-async function handleExpressCheckoutConfirm(event){
-  const errEl = document.getElementById('cardError');
-  errEl.textContent = '';
-  try{
-    const total = currentCartTotal();
-    const clientSecret = await requestPaymentIntent(total);
-    const { error } = await stripeInstance.confirmPayment({
-      elements: cardEls.elements,
-      clientSecret,
-      confirmParams: { return_url: window.location.href },
-      redirect: 'if_required'
-    });
-    if (error){
-      errEl.textContent = error.message;
-      return;
-    }
-    const order = await createOrderRecord({ method:'card', status:'completed' });
-    notifyOrderEmail(order);
-    showPaySuccess('付款成功，訂單已建立。感謝您的購買！');
-  }catch(err){
-    console.error(err);
-    errEl.textContent = err.message;
-  }
-}
-
-// 跟後端要 PaymentIntent 的 client secret（金鑰只存在伺服器端，前端不會碰到）
-async function requestPaymentIntent(totalTWD){
-  const resp = await fetch('/api/create-payment-intent', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ amount: Math.round(totalTWD * 100), currency:'twd' })
-  });
-  const data = await resp.json();
-  if (!resp.ok || !data.clientSecret){
-    throw new Error(data.error || '無法建立付款意圖，請確認後端已部署並設定 STRIPE_SECRET_KEY。');
-  }
-  return data.clientSecret;
-}
-
-function renderPaypalButton(){
-  const container = document.getElementById('paypal-button-container');
-  container.innerHTML = '';
-  if (window.__paypalFailed || typeof paypal === 'undefined'){
-    container.innerHTML = '<div class="note-box">PayPal SDK 尚未載入成功（可能是網路限制或需替換正式 Client ID）。請確認已將程式中的 client-id 換成您自己的 PayPal 商家 Client ID。</div>';
-    return;
-  }
-  const total = currentCartTotal();
-  paypal.Buttons({
-    style: { layout:'vertical', color:'black', shape:'rect', label:'paypal' },
-    createOrder: function(data, actions){
-      return actions.order.create({
-        purchase_units: [{ amount: { value: total.toFixed(2), currency_code: 'TWD' } }]
-      });
-    },
-    onApprove: function(data, actions){
-      return actions.order.capture().then(async function(details){
-        // 關鍵驗證：只有 status === 'COMPLETED' 才建立訂單、計入營收
-        if (details.status === 'COMPLETED'){
-          try{
-            const order = await createOrderRecord({ method:'paypal', status:'completed', paypalOrderId: details.id });
-            notifyOrderEmail(order);
-            showPaySuccess('付款成功，訂單已建立。感謝您的購買！');
-          }catch(err){
-            console.error(err);
-            alert('付款已完成，但訂單寫入資料庫失敗，請截圖聯繫賣家：' + err.message);
-          }
-        } else {
-          alert('付款尚未完成（狀態：' + details.status + '），未建立訂單。');
-        }
-      });
-    },
-    onCancel: function(){
-      // 買家中途關閉視窗，不建立任何訂單資料
-      console.log('PayPal 付款已取消，未產生訂單資料。');
-    },
-    onError: function(err){
-      console.error(err);
-      alert('PayPal 發生錯誤，請稍後再試。');
-    }
-  }).render('#paypal-button-container');
-}
-
-document.getElementById('bankSubmitBtn').onclick = async ()=>{
-  const last5 = document.getElementById('bankLast5').value.trim();
-  if (!/^\d{5}$/.test(last5)){ alert('請輸入正確的匯款帳號末五碼（5 位數字）。'); return; }
-  try{
-    const order = await createOrderRecord({ method:'bank', status:'pending', bankLast5: last5 });
-    notifyOrderEmail(order);
-    showPaySuccess('已收到您的對帳資料，訂單狀態為「待對帳」，我們確認款項後將盡快為您出貨。');
-  }catch(err){
-    console.error(err);
-    alert('送出失敗，請稍後再試：' + err.message);
-  }
-};
-
-async function createOrderRecord({ method, status, paypalOrderId=null, stripePaymentIntentId=null, bankLast5=null }){
+/* ---------------- 綠界 ECPay：信用卡全頁跳轉 ----------------
+   個人／商務賣家等級沒有嵌入式刷卡欄位，流程是：
+   建立一個真正的 <form method="POST"> 送到我們自己的後端 → 後端建立待付款訂單、
+   算好 ECPay 需要的參數 → 直接回傳一個會自動送出的表單，瀏覽器整頁跳轉到 ECPay
+   自己的付款頁面（不使用彈窗或 iframe）。付款完成後由 api/ecpay-return.js
+   在背景把訂單標記為已完成、寄出通知信。 */
+document.getElementById('checkoutContinueBtn').addEventListener('click', ()=>{
   const cart = DB.getCart();
-  const total = cart.reduce((s,i)=>s+Number(i.price||0),0);
-  const order = {
-    id: uid(), createdAt: new Date().toISOString(),
-    items: cart, total, method, status,
-    paypalOrderId, stripePaymentIntentId, bankLast5
-  };
-  await DB.addOrder(order);
-  DB.setCart([]); state.cart = [];
-  renderCartCount(); renderCartDrawer();
-  return order;
-}
-
-function showPaySuccess(msg){
-  document.getElementById('payPanelCard').style.display='none';
-  document.getElementById('payPanelPaypal').style.display='none';
-  document.getElementById('payPanelBank').style.display='none';
-  document.querySelector('.pay-methods').style.display='none';
-  document.getElementById('paySuccess').style.display='block';
-  document.getElementById('paySuccessMsg').textContent = msg;
-}
-
-/* 訂單成立通知信 — 需要真正的伺服器端點來呼叫 Resend API
-   （瀏覽器端無法直接安全呼叫 Resend，因為會暴露 API 金鑰且會被 CORS 擋下）。
-   這裡預留串接位置：正式上線請建立一個伺服器 endpoint，例如 POST /api/send-order-email，
-   在伺服器端使用 Resend API 寄送通知信到 theliminal.offcial@gmail.com。 */
-async function notifyOrderEmail(order){
-  try{
-    await fetch('/api/send-order-email', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ to:'theliminal.offcial@gmail.com', order })
-    });
-  }catch(err){
-    console.log('[展示模式] 尚未串接後端寄信服務，以下為應寄出的通知內容：', order);
-  }
-}
+  if (!cart.length){ alert('購物車是空的。'); return; }
+  const btn = document.getElementById('checkoutContinueBtn');
+  btn.disabled = true; btn.textContent = '前往付款頁…';
+  document.getElementById('ecpayItemsJson').value = JSON.stringify(cart);
+  document.getElementById('ecpayTotal').value = String(currentCartTotal());
+  // 真正的表單送出（不是 fetch），讓瀏覽器整頁導到綠界的付款頁面
+  document.getElementById('ecpayRedirectForm').submit();
+});
 
 /* ---------------- shopee bottom bar hover (fallback for touch) ---------------- */
 const shopeeBarWrap = document.getElementById('shopeeBarWrap');
