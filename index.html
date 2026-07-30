@@ -377,7 +377,7 @@
       <div class="checkout-fine-print">按下 Continue 即代表您同意本次金額將由綠界科技（ECPay）安全處理付款；若為訂閱方案，將依方案週期自動續訂扣款，取消請至會員中心操作。</div>
       <div class="checkout-secure-note">🔒 Secured by ECPay</div>
 
-      <form id="ecpayRedirectForm" method="POST" action="/api/create-ecpay-order" style="display:none;">
+      <form id="ecpayRedirectForm" method="POST" style="display:none;">
         <input type="hidden" name="itemsJson" id="ecpayItemsJson">
         <input type="hidden" name="total" id="ecpayTotal">
       </form>
@@ -556,6 +556,13 @@ const SIZES = ['XS','S','M','L','XL'];
 const SUPABASE_URL = 'https://ealsbmjvguatxxeobhrt.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_whK6gS7Lz9ydCS2iNZ_NSw__isheHzb';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ==== 後端 API 網址 ====
+// 如果這個網站跟 liminal-backend（/api 資料夾）部署在「同一個」Vercel 專案下，
+// 留空字串即可，相對路徑 /api/create-ecpay-order 就能正常運作。
+// 如果前端和後端是分開部署的兩個網址，請填入後端的完整網址，例如：
+//   const API_BASE_URL = 'https://liminal-backend.vercel.app';
+const API_BASE_URL = '';
 
 function rowToProduct(row){
   return {
@@ -914,12 +921,22 @@ function renderCheckoutPage(){
 document.getElementById('checkoutContinueBtn').addEventListener('click', ()=>{
   const cart = DB.getCart();
   if (!cart.length){ alert('購物車是空的。'); return; }
+
+  // 用本機檔案（file:///...）打開時，相對路徑 /api/... 沒辦法呼叫任何伺服器，
+  // 一定要先把整個網站部署到 Vercel（或其他能跑 Node 的平台）才有真正的網址可以呼叫 API。
+  if (location.protocol === 'file:'){
+    alert('目前是用本機檔案打開網頁（網址開頭是 file:///），沒辦法呼叫後端 API。\n請先把整個網站部署到 Vercel，用部署後的網址（https://... 開頭）開啟才能正常結帳。');
+    return;
+  }
+
   const btn = document.getElementById('checkoutContinueBtn');
   btn.disabled = true; btn.textContent = '前往付款頁…';
+  const form = document.getElementById('ecpayRedirectForm');
+  form.action = API_BASE_URL + '/api/create-ecpay-order';
   document.getElementById('ecpayItemsJson').value = JSON.stringify(cart);
   document.getElementById('ecpayTotal').value = String(currentCartTotal());
   // 真正的表單送出（不是 fetch），讓瀏覽器整頁導到綠界的付款頁面
-  document.getElementById('ecpayRedirectForm').submit();
+  form.submit();
 });
 
 /* ---------------- shopee bottom bar hover (fallback for touch) ---------------- */
