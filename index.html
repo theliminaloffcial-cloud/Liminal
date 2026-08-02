@@ -323,6 +323,20 @@
   .row-btn.del{ border-color:var(--danger); color:var(--danger); }
 
   footer{ border-top:1px solid var(--line); padding:30px 0; text-align:center; font-family:'Space Mono', monospace; font-size:11px; color:var(--grey-3); }
+  .footer-nav{ display:flex; gap:18px; justify-content:center; flex-wrap:wrap; margin-bottom:12px; }
+  .footer-nav a{ color:var(--grey-3); text-decoration:none; letter-spacing:.04em; }
+  .footer-nav a:hover{ color:var(--ink); }
+
+  /* ---------- 法定資訊頁面（關於我們／聯絡資訊／退換貨政策／隱私權政策） ---------- */
+  .policy-page{ padding:64px 0 100px; max-width:760px; margin:0 auto; }
+  .policy-page h1{ font-size:clamp(30px,4vw,42px); font-style:italic; margin-bottom:8px; }
+  .policy-page .eyebrow{ display:block; margin-bottom:10px; }
+  .policy-page h2{ font-family:'Archivo', sans-serif; font-weight:600; font-size:16px; margin:34px 0 12px; }
+  .policy-page p{ color:#444; font-size:14.5px; line-height:1.8; margin-bottom:14px; }
+  .policy-page ul{ color:#444; font-size:14.5px; line-height:1.8; padding-left:20px; margin-bottom:14px; }
+  .policy-page li{ margin-bottom:6px; }
+  .policy-page .todo-fill{ background:#FDF3D8; border:1px dashed #C9A876; padding:2px 6px; border-radius:3px; color:#7A5B10; font-weight:600; }
+  .policy-updated{ font-family:'Space Mono', monospace; font-size:11px; color:var(--grey-3); margin-top:40px; padding-top:20px; border-top:1px solid var(--line); }
 </style>
 </head>
 <body>
@@ -515,7 +529,145 @@
   </div>
 </div>
 
-<footer>© 2026 LIMINAL — 版權所有</footer>
+<!-- ============ 關於我們 ============ -->
+<div class="view" id="view-about">
+  <div class="wrap">
+    <div class="policy-page">
+      <span class="eyebrow">About</span>
+      <h1>關於 LIMINAL</h1>
+      <p>LIMINAL 是一個成立於台灣的服飾品牌，關注「介於兩者之間」的狀態——日與夜之間、季節與季節之間、出發與抵達之間。我們設計的每一件單品，都希望能陪伴穿著者度過生活裡那些過渡、轉換的時刻。</p>
+      <p>品牌目前以線上商店與蝦皮賣場為主要銷售通路，商品採小批量生產，著重版型與材質的舒適度，不追求快速汰換的季節性潮流。</p>
+
+      <h2>品牌資訊</h2>
+      <ul>
+        <li>品牌名稱：LIMINAL</li>
+        <li>營運地區：台灣</li>
+        <li>公司／負責人名稱：<span class="todo-fill">請填入您的公司登記名稱或負責人姓名</span></li>
+        <li>統一編號／營利事業登記證號：<span class="todo-fill">請填入（若為個人賣家可填身分證字號後六碼或依 ECPay 要求格式）</span></li>
+      </ul>
+
+      <h2>聯絡我們</h2>
+      <p>如對品牌、商品或訂單有任何問題，歡迎透過 <a href="#/contact" onclick="event.preventDefault(); goTo('#/contact'); return false;">聯絡資訊頁面</a> 提供的方式與我們聯繫。</p>
+
+      <div class="policy-updated">最後更新：2026 年</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 聯絡資訊 ============ -->
+<div class="view" id="view-contact">
+  <div class="wrap">
+    <div class="policy-page">
+      <span class="eyebrow">Contact</span>
+      <h1>聯絡資訊</h1>
+      <p>營業時間內我們會盡快回覆您的訊息，訂單相關問題建議附上訂單編號以加快處理速度。</p>
+
+      <h2>客服信箱</h2>
+      <p>theliminal.offcial@gmail.com</p>
+
+      <h2>客服電話</h2>
+      <p><span class="todo-fill">請填入您的真實聯絡電話（ECPay 審核會實際查核這支電話是否可撥通）</span></p>
+
+      <h2>服務時間</h2>
+      <p><span class="todo-fill">請填入實際服務時段，例如：週一至週五 10:00–18:00（國定假日除外）</span></p>
+
+      <h2>登記地址</h2>
+      <p><span class="todo-fill">請填入公司或營業登記地址</span></p>
+
+      <h2>蝦皮賣場</h2>
+      <p><a href="https://tw.shp.ee/xMrdLaNo" target="_blank" rel="noopener">https://tw.shp.ee/xMrdLaNo</a></p>
+
+      <div class="policy-updated">最後更新：2026 年</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 退換貨政策 ============ -->
+<div class="view" id="view-returns">
+  <div class="wrap">
+    <div class="policy-page">
+      <span class="eyebrow">Returns &amp; Exchanges</span>
+      <h1>退換貨政策</h1>
+      <p>依據台灣《消費者保護法》第 19 條及「通訊交易解除權合理例外情事適用準則」，您在網路上購買的商品，自收到商品次日起享有 <strong>7 天猶豫期</strong>（非試用期），期間內可不附理由辦理退貨。</p>
+
+      <h2>退貨條件</h2>
+      <ul>
+        <li>商品須保持全新狀態，未經穿著、水洗或使用，吊牌及原廠包裝完整</li>
+        <li>請於猶豫期內以書面或 Email 方式通知我們您欲解除契約</li>
+        <li>下列商品依準則規定，經拆封或試用後不適用 7 天猶豫期：貼身衣物（若標示不可退換）、客製化商品、依個別消費者要求所為之非規格化商品</li>
+      </ul>
+
+      <h2>退貨流程</h2>
+      <ul>
+        <li>來信 theliminal.offcial@gmail.com，附上訂單編號、退貨原因、聯絡方式</li>
+        <li>我們將於 <span class="todo-fill">請填入實際處理天數，例如：3 個工作天</span> 內回覆退貨方式</li>
+        <li>商品寄回後，經確認符合退貨條件，將於 <span class="todo-fill">請填入退款天數</span> 個工作天內完成退款，退款將原路退回原付款方式</li>
+      </ul>
+
+      <h2>換貨</h2>
+      <p>如商品有瑕疵或尺寸不合，可於收到商品後 <span class="todo-fill">請填入天數，例如：7 天</span> 內申請換貨，運費由 <span class="todo-fill">請填入：賣家／買家</span> 負擔，實際依商品狀況與存貨而定。</p>
+
+      <h2>運費說明</h2>
+      <p>非因商品瑕疵之退換貨，來回運費由買方負擔；如屬商品本身瑕疵或出貨錯誤，運費由賣方負擔。</p>
+
+      <div class="policy-updated">最後更新：2026 年</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 隱私權政策 ============ -->
+<div class="view" id="view-privacy">
+  <div class="wrap">
+    <div class="policy-page">
+      <span class="eyebrow">Privacy Policy</span>
+      <h1>隱私權政策</h1>
+      <p>LIMINAL（以下稱「本站」）重視您的隱私權，以下說明本站蒐集、處理及利用您個人資料的方式，請於使用本站服務前詳閱以下內容。</p>
+
+      <h2>蒐集的資料類型</h2>
+      <ul>
+        <li>訂單資訊：姓名、收件地址、聯絡電話、Email、購買商品明細</li>
+        <li>付款資訊：付款狀態與交易編號（信用卡卡號本身由綠界科技 ECPay 之付款頁面直接處理，本站伺服器不會接觸、儲存您的完整卡號）</li>
+        <li>瀏覽資訊：購物車暫存資料（儲存於您瀏覽器的 localStorage，僅存在您自己的裝置上）</li>
+      </ul>
+
+      <h2>資料的使用目的</h2>
+      <ul>
+        <li>處理訂單、出貨及售後服務聯繫</li>
+        <li>寄送訂單成立、出貨通知等交易相關 Email</li>
+        <li>依法令要求配合主管機關調查</li>
+      </ul>
+
+      <h2>第三方服務</h2>
+      <p>為提供訂購與金流服務，本站會將必要資料傳送給以下第三方服務商，各服務商均有其自身的隱私權政策：</p>
+      <ul>
+        <li><strong>綠界科技 ECPay</strong>：處理信用卡付款，本站不會接觸您的完整卡號</li>
+        <li><strong>Supabase</strong>：儲存商品與訂單資料的資料庫服務</li>
+        <li><strong>Resend</strong>：寄送訂單通知 Email</li>
+      </ul>
+
+      <h2>您的權利</h2>
+      <p>您可依個人資料保護法規定，向本站請求查詢、閱覽、複製、補充、更正、停止蒐集處理利用或刪除您的個人資料，請透過 theliminal.offcial@gmail.com 與我們聯繫。</p>
+
+      <h2>資料保存期限</h2>
+      <p>訂單相關資料將依法令要求之保存年限（如發票、交易紀錄相關規定）保存，期滿後將予以刪除或去識別化處理。</p>
+
+      <h2>政策修訂</h2>
+      <p>本政策內容如有修訂，將於本頁公告，請不定期查閱本頁面以確保您已閱讀最新版本。</p>
+
+      <div class="policy-updated">最後更新：2026 年</div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-nav">
+    <a href="#/about" onclick="event.preventDefault(); goTo('#/about'); return false;">關於我們</a>
+    <a href="#/contact" onclick="event.preventDefault(); goTo('#/contact'); return false;">聯絡資訊</a>
+    <a href="#/returns" onclick="event.preventDefault(); goTo('#/returns'); return false;">退換貨政策</a>
+    <a href="#/privacy" onclick="event.preventDefault(); goTo('#/privacy'); return false;">隱私權政策</a>
+  </div>
+  © 2026 LIMINAL — 版權所有
+</footer>
 
 <!-- cart drawer -->
 <div class="overlay" id="cartOverlay"></div>
@@ -729,6 +881,14 @@ function route(){
   } else if (hash.startsWith('#/checkout')){
     document.getElementById('view-checkout').classList.add('active');
     renderCheckoutPage();
+  } else if (hash.startsWith('#/about')){
+    document.getElementById('view-about').classList.add('active');
+  } else if (hash.startsWith('#/contact')){
+    document.getElementById('view-contact').classList.add('active');
+  } else if (hash.startsWith('#/returns')){
+    document.getElementById('view-returns').classList.add('active');
+  } else if (hash.startsWith('#/privacy')){
+    document.getElementById('view-privacy').classList.add('active');
   } else {
     document.getElementById('view-shop').classList.add('active');
     renderShopGrid();
