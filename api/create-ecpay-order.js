@@ -42,7 +42,7 @@ const ECPAY_CHECKOUT_URL = process.env.ECPAY_CHECKOUT_URL ||
   'https://payment.ecpay.com.tw/Cashier/AioCheckOut/V5';
 
 // 您網站的網域（用來組出 ReturnURL / OrderResultURL），部署到 Vercel 後請設定這個環境變數
-const SITE_URL = process.env.SITE_URL || 'https://liminal-site-8.vercel.app';
+const SITE_URL = process.env.SITE_URL || 'https://liminal-gamma-three.vercel.app';
 
 function genMerchantTradeNo(){
   // 只能是英數字，長度上限 20
