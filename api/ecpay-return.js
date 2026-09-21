@@ -101,6 +101,10 @@ export default async function handler(req, res) {
                 total: order.total,
                 method: 'ecpay',
                 status: 'completed',
+                recipientName: order.recipient_name,
+                recipientPhone: order.recipient_phone,
+                recipientAddress: order.recipient_address,
+                recipientEmail: order.recipient_email,
               },
             }),
           });

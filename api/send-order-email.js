@@ -38,10 +38,21 @@ function buildEmailHtml(order) {
   const methodLabel =
     order.method === 'paypal'
       ? 'PayPal'
+      : order.method === 'ecpay' || order.method === 'card'
+      ? '信用卡（綠界 ECPay）'
       : `銀行轉帳（末五碼：${escapeHtml(order.bankLast5 || '未提供')}）`;
 
   const statusLabel =
     order.status === 'pending' ? '待對帳' : order.status === 'paid' ? '已付款' : '已完成';
+
+  const recipientHtml = order.recipientName ? `
+    <div style="background:#F4F4F3; padding:14px 16px; margin:16px 0;">
+      <p style="margin:0 0 6px; font-weight:600;">收件資訊</p>
+      <p style="margin:0;">${escapeHtml(order.recipientName)}｜${escapeHtml(order.recipientPhone || '')}</p>
+      <p style="margin:0;">${escapeHtml(order.recipientAddress || '')}</p>
+      ${order.recipientEmail ? `<p style="margin:0; color:#666;">${escapeHtml(order.recipientEmail)}</p>` : ''}
+    </div>
+  ` : '';
 
   return `
   <div style="font-family:Arial,'Noto Sans TC',sans-serif; max-width:520px; margin:0 auto; color:#111;">
@@ -50,6 +61,7 @@ function buildEmailHtml(order) {
     <p>建立時間：${new Date(order.createdAt).toLocaleString('zh-Hant-TW')}</p>
     <p>付款方式：${methodLabel}</p>
     <p>訂單狀態：<strong>${statusLabel}</strong></p>
+    ${recipientHtml}
     <table style="width:100%; border-collapse:collapse; margin:16px 0;">
       <thead>
         <tr style="background:#f4f4f3;">

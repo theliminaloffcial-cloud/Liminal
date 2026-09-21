@@ -217,6 +217,22 @@
   }
   .checkout-summary-row:last-child{ border-bottom:none; }
   .checkout-summary-row .qty{ color:var(--grey-3); font-size:12px; }
+
+  .checkout-recipient-block{ margin-bottom:26px; padding-top:22px; border-top:1px solid var(--line); }
+  .checkout-section-label{
+    font-family:'Space Mono', monospace; font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--grey-3); display:block; margin-bottom:14px;
+  }
+  .checkout-field{ margin-bottom:12px; }
+  .checkout-field label{
+    display:block; font-size:12px; color:#555; margin-bottom:5px;
+  }
+  .checkout-field input{
+    width:100%; padding:11px 12px; border:1px solid var(--line); border-radius:6px;
+    font-family:'Archivo', sans-serif; font-size:14px; background:#F8F9FA;
+  }
+  .checkout-field input:focus{ outline:none; border-color:var(--ink); background:var(--paper); }
+
   .checkout-continue-btn{
     width:100%; padding:16px; background:#111111; color:#fff; border:none; border-radius:8px;
     font-family:'Archivo', sans-serif; font-weight:600; font-size:15px; letter-spacing:.01em;
@@ -301,6 +317,26 @@
 
       <div class="checkout-summary-list" id="checkoutSummaryList"></div>
 
+      <div class="checkout-recipient-block">
+        <span class="checkout-section-label">收件資訊</span>
+        <div class="checkout-field">
+          <label for="recipientName">收件人姓名</label>
+          <input type="text" id="recipientName" placeholder="王小明" required>
+        </div>
+        <div class="checkout-field">
+          <label for="recipientPhone">聯絡電話</label>
+          <input type="tel" id="recipientPhone" placeholder="0912345678" required>
+        </div>
+        <div class="checkout-field">
+          <label for="recipientAddress">收件地址</label>
+          <input type="text" id="recipientAddress" placeholder="台北市松山區三民路43巷8號12樓" required>
+        </div>
+        <div class="checkout-field">
+          <label for="recipientEmail">Email（選填，訂單通知用）</label>
+          <input type="email" id="recipientEmail" placeholder="you@example.com">
+        </div>
+      </div>
+
       <button type="button" class="checkout-continue-btn" id="checkoutContinueBtn">Continue</button>
       <div class="checkout-fine-print">按下 Continue 即代表您同意本次金額將由綠界科技（ECPay）安全處理付款；若為訂閱方案，將依方案週期自動續訂扣款，取消請至會員中心操作。</div>
       <div class="checkout-secure-note">🔒 Secured by ECPay</div>
@@ -308,6 +344,10 @@
       <form id="ecpayRedirectForm" method="POST" style="display:none;">
         <input type="hidden" name="itemsJson" id="ecpayItemsJson">
         <input type="hidden" name="total" id="ecpayTotal">
+        <input type="hidden" name="recipientName" id="ecpayRecipientName">
+        <input type="hidden" name="recipientPhone" id="ecpayRecipientPhone">
+        <input type="hidden" name="recipientAddress" id="ecpayRecipientAddress">
+        <input type="hidden" name="recipientEmail" id="ecpayRecipientEmail">
       </form>
     </div>
   </div>
@@ -799,6 +839,15 @@ document.getElementById('checkoutContinueBtn').addEventListener('click', ()=>{
   const cart = DB.getCart();
   if (!cart.length){ alert('購物車是空的。'); return; }
 
+  const name = document.getElementById('recipientName').value.trim();
+  const phone = document.getElementById('recipientPhone').value.trim();
+  const address = document.getElementById('recipientAddress').value.trim();
+  const email = document.getElementById('recipientEmail').value.trim();
+  if (!name || !phone || !address){
+    alert('請填寫收件人姓名、聯絡電話與收件地址，我們才知道要把商品寄去哪裡。');
+    return;
+  }
+
   // 用本機檔案（file:///...）打開時，相對路徑 /api/... 沒辦法呼叫任何伺服器，
   // 一定要先把整個網站部署到 Vercel（或其他能跑 Node 的平台）才有真正的網址可以呼叫 API。
   if (location.protocol === 'file:'){
@@ -812,6 +861,10 @@ document.getElementById('checkoutContinueBtn').addEventListener('click', ()=>{
   form.action = API_BASE_URL + '/api/create-ecpay-order';
   document.getElementById('ecpayItemsJson').value = JSON.stringify(cart);
   document.getElementById('ecpayTotal').value = String(currentCartTotal());
+  document.getElementById('ecpayRecipientName').value = name;
+  document.getElementById('ecpayRecipientPhone').value = phone;
+  document.getElementById('ecpayRecipientAddress').value = address;
+  document.getElementById('ecpayRecipientEmail').value = email;
   // 真正的表單送出（不是 fetch），讓瀏覽器整頁導到綠界的付款頁面
   form.submit();
 });

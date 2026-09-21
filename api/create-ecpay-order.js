@@ -122,9 +122,16 @@ export default async function handler(req, res) {
     const body = req.body || {};
     const items = JSON.parse(body.itemsJson || '[]');
     const total = Number(body.total || 0);
+    const recipientName = (body.recipientName || '').trim();
+    const recipientPhone = (body.recipientPhone || '').trim();
+    const recipientAddress = (body.recipientAddress || '').trim();
+    const recipientEmail = (body.recipientEmail || '').trim();
 
     if (!items.length || !total || total <= 0) {
       return res.status(400).send('缺少購物車內容或金額不正確');
+    }
+    if (!recipientName || !recipientPhone || !recipientAddress) {
+      return res.status(400).send('缺少收件人姓名、電話或地址，請回上一頁填寫完整。');
     }
     if (total > 6000000) {
       // ECPay 單筆金額上限（一般約六百萬，實際請依商店等級確認）
@@ -142,6 +149,10 @@ export default async function handler(req, res) {
       method: 'ecpay',
       status: 'pending',
       merchant_trade_no: merchantTradeNo,
+      recipient_name: recipientName,
+      recipient_phone: recipientPhone,
+      recipient_address: recipientAddress,
+      recipient_email: recipientEmail || null,
       created_at: new Date().toISOString()
     });
     if (insertErr) {
