@@ -227,11 +227,11 @@
   .checkout-field label{
     display:block; font-size:12px; color:#555; margin-bottom:5px;
   }
-  .checkout-field input{
+  .checkout-field input, .checkout-field select{
     width:100%; padding:11px 12px; border:1px solid var(--line); border-radius:6px;
     font-family:'Archivo', sans-serif; font-size:14px; background:#F8F9FA;
   }
-  .checkout-field input:focus{ outline:none; border-color:var(--ink); background:var(--paper); }
+  .checkout-field input:focus, .checkout-field select:focus{ outline:none; border-color:var(--ink); background:var(--paper); }
 
   .checkout-continue-btn{
     width:100%; padding:16px; background:#111111; color:#fff; border:none; border-radius:8px;
@@ -320,16 +320,34 @@
       <div class="checkout-recipient-block">
         <span class="checkout-section-label">收件資訊</span>
         <div class="checkout-field">
-          <label for="recipientName">收件人姓名</label>
-          <input type="text" id="recipientName" placeholder="王小明" required>
+          <label for="recipientName">收件人姓名 / Full name</label>
+          <input type="text" id="recipientName" placeholder="王小明 / John Smith" required>
         </div>
         <div class="checkout-field">
-          <label for="recipientPhone">聯絡電話</label>
-          <input type="tel" id="recipientPhone" placeholder="0912345678" required>
+          <label for="recipientCountry">國家/地區 / Country</label>
+          <select id="recipientCountry">
+            <option value="台灣">台灣 Taiwan</option>
+            <option value="香港">香港 Hong Kong</option>
+            <option value="澳門">澳門 Macau</option>
+            <option value="中國">中國 China</option>
+            <option value="新加坡">新加坡 Singapore</option>
+            <option value="馬來西亞">馬來西亞 Malaysia</option>
+            <option value="日本">日本 Japan</option>
+            <option value="韓國">韓國 South Korea</option>
+            <option value="美國">美國 United States</option>
+            <option value="加拿大">加拿大 Canada</option>
+            <option value="英國">英國 United Kingdom</option>
+            <option value="澳洲">澳洲 Australia</option>
+            <option value="其他">其他 Other</option>
+          </select>
         </div>
         <div class="checkout-field">
-          <label for="recipientAddress">收件地址</label>
-          <input type="text" id="recipientAddress" placeholder="台北市松山區三民路43巷8號12樓" required>
+          <label for="recipientPhone">聯絡電話 / Phone（請含國碼）</label>
+          <input type="tel" id="recipientPhone" placeholder="+886 912 345 678" required>
+        </div>
+        <div class="checkout-field">
+          <label for="recipientAddress">收件地址 / Address</label>
+          <input type="text" id="recipientAddress" placeholder="門牌、街道、城市、郵遞區號 / Street, City, Postal Code" required>
         </div>
         <div class="checkout-field">
           <label for="recipientEmail">Email（選填，訂單通知用）</label>
@@ -338,13 +356,14 @@
       </div>
 
       <button type="button" class="checkout-continue-btn" id="checkoutContinueBtn">Continue</button>
-      <div class="checkout-fine-print">按下 Continue 即代表您同意本次金額將由綠界科技（ECPay）安全處理付款；若為訂閱方案，將依方案週期自動續訂扣款，取消請至會員中心操作。</div>
+      <div class="checkout-fine-print">按下 Continue 即代表您同意本次金額將由綠界科技（ECPay）安全處理付款；若為訂閱方案，將依方案週期自動續訂扣款，取消請至會員中心操作。目前信用卡僅接受台灣發行之卡片。</div>
       <div class="checkout-secure-note">🔒 Secured by ECPay</div>
 
       <form id="ecpayRedirectForm" method="POST" style="display:none;">
         <input type="hidden" name="itemsJson" id="ecpayItemsJson">
         <input type="hidden" name="total" id="ecpayTotal">
         <input type="hidden" name="recipientName" id="ecpayRecipientName">
+        <input type="hidden" name="recipientCountry" id="ecpayRecipientCountry">
         <input type="hidden" name="recipientPhone" id="ecpayRecipientPhone">
         <input type="hidden" name="recipientAddress" id="ecpayRecipientAddress">
         <input type="hidden" name="recipientEmail" id="ecpayRecipientEmail">
@@ -840,6 +859,7 @@ document.getElementById('checkoutContinueBtn').addEventListener('click', ()=>{
   if (!cart.length){ alert('購物車是空的。'); return; }
 
   const name = document.getElementById('recipientName').value.trim();
+  const country = document.getElementById('recipientCountry').value;
   const phone = document.getElementById('recipientPhone').value.trim();
   const address = document.getElementById('recipientAddress').value.trim();
   const email = document.getElementById('recipientEmail').value.trim();
@@ -862,6 +882,7 @@ document.getElementById('checkoutContinueBtn').addEventListener('click', ()=>{
   document.getElementById('ecpayItemsJson').value = JSON.stringify(cart);
   document.getElementById('ecpayTotal').value = String(currentCartTotal());
   document.getElementById('ecpayRecipientName').value = name;
+  document.getElementById('ecpayRecipientCountry').value = country;
   document.getElementById('ecpayRecipientPhone').value = phone;
   document.getElementById('ecpayRecipientAddress').value = address;
   document.getElementById('ecpayRecipientEmail').value = email;
