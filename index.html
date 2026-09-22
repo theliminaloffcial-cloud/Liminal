@@ -894,6 +894,18 @@ document.getElementById('checkoutContinueBtn').addEventListener('click', ()=>{
 /* init */
 /* ---------------- 首頁大圖：從後台設定讀取（沒有設定過就用內建的預設圖） ---------------- */
 let heroCycleTimer = null;
+const HERO_CACHE_KEY = 'liminal_hero_cache_v1';
+
+function getCachedHeroImages(){
+  try{
+    const raw = localStorage.getItem(HERO_CACHE_KEY);
+    const arr = raw ? JSON.parse(raw) : null;
+    return Array.isArray(arr) && arr.length ? arr : null;
+  }catch(e){ return null; }
+}
+function setCachedHeroImages(images){
+  try{ localStorage.setItem(HERO_CACHE_KEY, JSON.stringify(images)); }catch(e){ /* 存不下就算了，不影響網站運作 */ }
+}
 
 async function loadHeroImage(){
   try{
@@ -909,7 +921,13 @@ async function loadHeroImage(){
         images = [single.data.value];
       }
     }
-    if (images.length) renderHeroImages(images);
+    if (images.length){
+      // 只有跟目前快取的內容不一樣時才重新渲染，避免每次都重繪造成不必要的閃動
+      const cached = getCachedHeroImages();
+      const changed = !cached || JSON.stringify(cached) !== JSON.stringify(images);
+      if (changed) renderHeroImages(images);
+      setCachedHeroImages(images);
+    }
   }catch(err){
     console.log('讀取首頁大圖設定失敗，使用內建預設圖片：', err);
   }
@@ -940,6 +958,10 @@ function renderHeroImages(images){
   }
 }
 
+// 先用瀏覽器快取的圖片立刻顯示（沒有網路延遲），畫面不會閃一下舊圖再換新圖；
+// 接著還是會在背景跟 Supabase 對一次最新資料，真的有更新才會換圖。
+const cachedHeroImages = getCachedHeroImages();
+if (cachedHeroImages) renderHeroImages(cachedHeroImages);
 loadHeroImage();
 
 renderCartCount();
