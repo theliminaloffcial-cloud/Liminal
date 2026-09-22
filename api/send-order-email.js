@@ -49,7 +49,7 @@ function buildEmailHtml(order) {
     <div style="background:#F4F4F3; padding:14px 16px; margin:16px 0;">
       <p style="margin:0 0 6px; font-weight:600;">收件資訊</p>
       <p style="margin:0;">${escapeHtml(order.recipientName)}｜${escapeHtml(order.recipientPhone || '')}</p>
-      <p style="margin:0;">${escapeHtml(order.recipientAddress || '')}</p>
+      <p style="margin:0;">${order.recipientCountry ? escapeHtml(order.recipientCountry) + '｜' : ''}${escapeHtml(order.recipientAddress || '')}</p>
       ${order.recipientEmail ? `<p style="margin:0; color:#666;">${escapeHtml(order.recipientEmail)}</p>` : ''}
     </div>
   ` : '';

@@ -123,6 +123,7 @@ export default async function handler(req, res) {
     const items = JSON.parse(body.itemsJson || '[]');
     const total = Number(body.total || 0);
     const recipientName = (body.recipientName || '').trim();
+    const recipientCountry = (body.recipientCountry || '').trim();
     const recipientPhone = (body.recipientPhone || '').trim();
     const recipientAddress = (body.recipientAddress || '').trim();
     const recipientEmail = (body.recipientEmail || '').trim();
@@ -150,6 +151,7 @@ export default async function handler(req, res) {
       status: 'pending',
       merchant_trade_no: merchantTradeNo,
       recipient_name: recipientName,
+      recipient_country: recipientCountry || null,
       recipient_phone: recipientPhone,
       recipient_address: recipientAddress,
       recipient_email: recipientEmail || null,
