@@ -536,6 +536,7 @@
   <div class="drawer-foot">
     <div class="cart-total"><span>總計</span><span id="cartTotal">NT$ 0</span></div>
     <button class="checkout-btn" id="checkoutOpenBtn">前往結帳</button>
+    <button type="button" onclick="clearCart()" style="width:100%; background:none; border:none; color:var(--grey-3); font-size:11.5px; margin-top:10px; text-decoration:underline; cursor:pointer;">清空購物車</button>
   </div>
 </aside>
 
@@ -767,15 +768,17 @@ async function renderProductDetail(){
       btn.onclick = ()=>{ state.selectedSize = btn.dataset.size; el.querySelectorAll('#sizeSwatches .opt-chip').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); };
     });
 
-    document.getElementById('addCartBtn').onclick = (e)=>{
+    document.getElementById('addCartBtn').onclick = async (e)=>{
       try{
         const cart = DB.getCart();
         cart.push({
           lineId: uid(), productId: p.id, name: p.name, price: p.price,
-          image: images[0] || '', color: state.selectedColor, size: state.selectedSize, qty: 1
+          color: state.selectedColor, size: state.selectedSize, qty: 1
+          // 注意：不存完整圖片進購物車——圖片是一大串文字，存多了會把瀏覽器的
+          // 儲存空間塞爆（之前的 bug 就是這樣來的）。顯示購物車時改成即時去查商品圖片。
         });
         DB.setCart(cart); state.cart = cart;
-        renderCartCount(); renderCartDrawer();
+        renderCartCount(); await renderCartDrawer();
         e.target.classList.remove('pulse'); void e.target.offsetWidth; e.target.classList.add('pulse');
         openCart();
       }catch(err){
@@ -803,15 +806,22 @@ function shiftGallery(dir){
 function renderCartCount(){
   document.getElementById('cartCount').textContent = DB.getCart().length;
 }
-function renderCartDrawer(){
+async function renderCartDrawer(){
   const cart = DB.getCart();
   const body = document.getElementById('cartBody');
   if (!cart.length){
     body.innerHTML = '<div class="cart-empty">購物車是空的。</div>';
   } else {
+    // 購物車本身不存圖片，顯示時才去查對應商品目前的圖片
+    const products = state.products.length ? state.products : await DB.getProducts();
+    state.products = products;
+    const imageFor = (productId) => {
+      const p = products.find(x => x.id === productId);
+      return p ? (p.images.front || p.images.back || p.images.detail || '') : '';
+    };
     body.innerHTML = cart.map(item => `
       <div class="cart-item">
-        <img src="${item.image}" alt="">
+        <img src="${imageFor(item.productId)}" alt="">
         <div class="cart-item-info">
           <div class="cart-item-name">${item.name}</div>
           <div class="cart-item-meta">${[item.color,item.size].filter(Boolean).join(' / ') || ''} · ${money(item.price)}</div>
@@ -827,9 +837,20 @@ function removeFromCart(lineId){
   const cart = DB.getCart().filter(i=>i.lineId!==lineId);
   DB.setCart(cart); renderCartCount(); renderCartDrawer();
 }
+function clearCart(){
+  if (!confirm('確定要清空購物車嗎？')) return;
+  try{
+    DB.setCart([]);
+  }catch(err){
+    alert('清空失敗：' + err.message);
+    return;
+  }
+  state.cart = [];
+  renderCartCount(); renderCartDrawer();
+}
 function openCart(){ document.getElementById('cartDrawer').classList.add('show'); document.getElementById('cartOverlay').classList.add('show'); }
 function closeCart(){ document.getElementById('cartDrawer').classList.remove('show'); document.getElementById('cartOverlay').classList.remove('show'); }
-document.getElementById('cartOpenBtn').onclick = ()=>{ renderCartDrawer(); openCart(); };
+document.getElementById('cartOpenBtn').onclick = async ()=>{ await renderCartDrawer(); openCart(); };
 document.getElementById('cartCloseBtn').onclick = closeCart;
 document.getElementById('cartOverlay').onclick = closeCart;
 
