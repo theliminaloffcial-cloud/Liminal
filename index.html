@@ -759,24 +759,34 @@ async function renderProductDetail(){
     </div>
   `;
 
-  el.querySelectorAll('#colorSwatches .opt-chip').forEach(btn=>{
-    btn.onclick = ()=>{ state.selectedColor = btn.dataset.color; el.querySelectorAll('#colorSwatches .opt-chip').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); };
-  });
-  el.querySelectorAll('#sizeSwatches .opt-chip').forEach(btn=>{
-    btn.onclick = ()=>{ state.selectedSize = btn.dataset.size; el.querySelectorAll('#sizeSwatches .opt-chip').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); };
-  });
-
-  document.getElementById('addCartBtn').onclick = (e)=>{
-    const cart = DB.getCart();
-    cart.push({
-      lineId: uid(), productId: p.id, name: p.name, price: p.price,
-      image: images[0] || '', color: state.selectedColor, size: state.selectedSize, qty: 1
+  try{
+    el.querySelectorAll('#colorSwatches .opt-chip').forEach(btn=>{
+      btn.onclick = ()=>{ state.selectedColor = btn.dataset.color; el.querySelectorAll('#colorSwatches .opt-chip').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); };
     });
-    DB.setCart(cart); state.cart = cart;
-    renderCartCount(); renderCartDrawer();
-    e.target.classList.remove('pulse'); void e.target.offsetWidth; e.target.classList.add('pulse');
-    openCart();
-  };
+    el.querySelectorAll('#sizeSwatches .opt-chip').forEach(btn=>{
+      btn.onclick = ()=>{ state.selectedSize = btn.dataset.size; el.querySelectorAll('#sizeSwatches .opt-chip').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); };
+    });
+
+    document.getElementById('addCartBtn').onclick = (e)=>{
+      try{
+        const cart = DB.getCart();
+        cart.push({
+          lineId: uid(), productId: p.id, name: p.name, price: p.price,
+          image: images[0] || '', color: state.selectedColor, size: state.selectedSize, qty: 1
+        });
+        DB.setCart(cart); state.cart = cart;
+        renderCartCount(); renderCartDrawer();
+        e.target.classList.remove('pulse'); void e.target.offsetWidth; e.target.classList.add('pulse');
+        openCart();
+      }catch(err){
+        console.error('加入購物車失敗：', err);
+        alert('加入購物車時發生錯誤：' + err.message + '\n麻煩把這個訊息截圖回報。');
+      }
+    };
+  }catch(err){
+    console.error('商品詳情頁互動元件綁定失敗：', err);
+    alert('這個商品頁面載入時發生錯誤：' + err.message + '\n麻煩把這個訊息截圖回報。');
+  }
 }
 
 function shiftGallery(dir){
